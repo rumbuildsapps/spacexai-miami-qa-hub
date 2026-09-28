@@ -1,5 +1,7 @@
 # 🌴 SpaceXAI Miami Community QA Hub 💥
 
+https://spacexai-miami-qa-hub.onrender.com/
+
 > **Autonomous multi-agent QA testing playground built with Grok Bot for the SpaceXAI Miami Community.**  
 > *"Because shipping buggy code that crashes the moment an investor opens it is not very Miami Tech."*
 
@@ -63,7 +65,7 @@ playwright install chromium
 uvicorn app:app --reload
 ```
 
-Open `http://127.0.0.1:8000` and start stress-testing!
+Open https://spacexai-miami-qa-hub.onrender.com/   and start stress-testing!
 
 ---
 
