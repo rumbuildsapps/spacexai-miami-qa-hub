@@ -212,7 +212,7 @@
       position: fixed;
       left: 0;
       top: 0;
-      width: 612px;
+      width: 800px;
       background: #ffffff;
       color: #1a1a1a;
       z-index: 2147483000;
@@ -221,12 +221,12 @@
     }
     #pdf-stage.is-off { left: -100vw; }
     #pdf-sheet {
-      font-family: Georgia, "Times New Roman", serif;
+      font-family: sans-serif;
       font-size: 12px;
-      line-height: 1.4;
-      padding: 20px 22px 28px;
-      width: 612px;
-      max-width: 612px;
+      line-height: 1.6;
+      padding: 0;
+      width: 800px;
+      max-width: 800px;
       box-sizing: border-box;
       background: #ffffff;
       color: #1a1a1a;
@@ -352,51 +352,53 @@
       </div>
     </section>
 
-    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:items-stretch">
-      <section class="lg:col-span-2 neon-border rounded-2xl bg-black/50 overflow-hidden relative scanline flex flex-col min-h-[520px]">
+    <div class="neon-border rounded-2xl p-5 bg-black/45 flex flex-col sm:flex-row gap-6 items-center mb-6">
+      <div class="relative w-40 h-40 shrink-0">
+        <svg viewBox="0 0 120 120" class="w-full h-full -rotate-90">
+          <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(34,240,255,0.15)" stroke-width="10" />
+          <circle id="score-ring" cx="60" cy="60" r="52" fill="none" stroke="#ff2d95" stroke-width="10"
+            stroke-linecap="round" stroke-dasharray="326.73" stroke-dashoffset="326.73" />
+        </svg>
+        <div class="absolute inset-0 flex flex-col items-center justify-center">
+          <span id="score-value" class="font-sans text-4xl font-extrabold text-white">--</span>
+          <span class="font-sans text-[10px] text-neoncyan">STABILITY</span>
+        </div>
+      </div>
+      <div class="flex-1 w-full">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <p class="font-sans text-xl font-bold text-neonpink">Resiliency Score Card</p>
+          <button
+            id="pdf-btn"
+            type="button"
+            disabled
+            class="shrink-0 font-sans tracking-wider text-[11px] font-bold px-4 py-2 rounded-lg border border-neoncyan/70 text-neoncyan bg-cyan-400/10 hover:bg-cyan-400/20 hover:shadow-cyan disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-cyan-400/10"
+          >
+            Download PDF Report
+          </button>
+        </div>
+        <p id="grade-line" class="font-sans text-sm text-cyan-100/80 mt-1">Rank: —</p>
+        <div id="badges" class="flex flex-wrap gap-2 mt-3"></div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:items-start">
+      <section class="lg:col-span-2 neon-border rounded-2xl bg-black/50 overflow-hidden relative scanline flex flex-col h-[680px]">
         <div class="flex items-center justify-between px-4 py-3 border-b border-cyan-400/20 shrink-0">
           <h2 class="font-sans text-sm tracking-widest text-neoncyan">LIVE TELEMETRY</h2>
           <span class="font-sans text-[10px] text-pink-300">/dev/tty.raid</span>
         </div>
-        <div id="terminal" class="flex-1 min-h-0 overflow-y-auto p-4 font-mono text-[12px] leading-relaxed space-y-1"></div>
+        <div class="flex-1 min-h-0 overflow-hidden">
+          <div id="terminal" class="overflow-y-auto h-full pr-2 p-4 font-mono text-[12px] leading-relaxed space-y-1"></div>
+        </div>
       </section>
 
-      <section class="lg:col-span-3 space-y-6 flex flex-col">
-        <div class="neon-border rounded-2xl p-5 bg-black/45 flex flex-col sm:flex-row gap-6 items-center shrink-0">
-          <div class="relative w-40 h-40 shrink-0">
-            <svg viewBox="0 0 120 120" class="w-full h-full -rotate-90">
-              <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(34,240,255,0.15)" stroke-width="10" />
-              <circle id="score-ring" cx="60" cy="60" r="52" fill="none" stroke="#ff2d95" stroke-width="10"
-                stroke-linecap="round" stroke-dasharray="326.73" stroke-dashoffset="326.73" />
-            </svg>
-            <div class="absolute inset-0 flex flex-col items-center justify-center">
-              <span id="score-value" class="font-sans text-4xl font-extrabold text-white">--</span>
-              <span class="font-sans text-[10px] text-neoncyan">STABILITY</span>
-            </div>
-          </div>
-          <div class="flex-1 w-full">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <p class="font-sans text-xl font-bold text-neonpink">Resiliency Score Card</p>
-              <button
-                id="pdf-btn"
-                type="button"
-                disabled
-                class="shrink-0 font-sans tracking-wider text-[11px] font-bold px-4 py-2 rounded-lg border border-neoncyan/70 text-neoncyan bg-cyan-400/10 hover:bg-cyan-400/20 hover:shadow-cyan disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-cyan-400/10"
-              >
-                Download PDF Report
-              </button>
-            </div>
-            <p id="grade-line" class="font-sans text-sm text-cyan-100/80 mt-1">Rank: —</p>
-            <div id="badges" class="flex flex-wrap gap-2 mt-3"></div>
-          </div>
+      <section class="lg:col-span-3 neon-border rounded-2xl overflow-hidden bg-black/45 flex flex-col h-[680px]">
+        <div class="px-4 py-3 border-b border-pink-500/20 flex items-center justify-between shrink-0">
+          <h2 class="font-sans text-sm tracking-widest text-neonpink">RESULTS RENDER</h2>
+          <span class="font-sans text-[10px] text-cyan-300/70">severity modules · executive brief</span>
         </div>
-
-        <div class="neon-border rounded-2xl overflow-hidden bg-black/45 flex flex-col flex-1 min-h-[420px]">
-          <div class="px-4 py-3 border-b border-pink-500/20 flex items-center justify-between shrink-0">
-            <h2 class="font-sans text-sm tracking-widest text-neonpink">RESULTS RENDER</h2>
-            <span class="font-sans text-[10px] text-cyan-300/70">severity modules · executive brief</span>
-          </div>
-          <article id="report" class="report flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-5 text-sm">
+        <div class="flex-1 min-h-0 overflow-hidden">
+          <article id="report" class="report overflow-y-auto h-full pr-2 overflow-x-hidden p-5 text-sm">
             <p class="text-cyan-100/50 font-sans">Score card will materialize here after the raid.</p>
           </article>
         </div>
@@ -550,14 +552,23 @@
     });
 
     function moduleBlock(label, items, klass, bannerClass) {
+      const emptyCopy = {
+        "Critical Traps": "✅ Zero Core Crashes Detected! Your server infrastructure is rock-solid.",
+        "Warnings": "✅ No Compliance Violations Found! Your layout structure is fully optimized.",
+      };
       const body = (!items || !items.length)
-        ? `<p class="text-cyan-100/50">None on this pass.</p>`
-        : items.map((m) => `
+        ? (emptyCopy[label]
+          ? `<p class="font-bold text-white">${emptyCopy[label]}</p>`
+          : `<p class="text-cyan-100/50">None on this pass.</p>`)
+        : items.map((m) => {
+            const detail = (m.detail || "").trim();
+            return `
             <div class="sev-item">
               <p class="font-bold text-white">${escapeHtml(m.title)}</p>
-              <p class="text-fuchsia-50/90">${escapeHtml(m.detail)}</p>
+              ${detail ? `<p class="text-fuchsia-50/90">${escapeHtml(detail)}</p>` : ""}
               ${chipRow(m.badges)}
-            </div>`).join("");
+            </div>`;
+          }).join("");
       return `<section class="sev-mod ${klass}"><div class="sev-banner ${bannerClass}">${escapeHtml(label)}</div>${body}</section>`;
     }
 
@@ -584,6 +595,10 @@
     }
 
     function fillPdfSheet(result) {
+      if (result.pdf_html) {
+        pdfSheet.innerHTML = DOMPurify.sanitize(result.pdf_html, { USE_PROFILES: { html: true }, ADD_ATTR: ["style"] });
+        return;
+      }
       const findings = result.findings && result.findings.length
         ? result.findings
         : ["We did not record extra findings."];
@@ -720,12 +735,26 @@
         if (y + space > pageBottom) newPage();
       }
 
+      function pdfSafe(text) {
+        return String(text || "")
+          .replace(/[\u2018\u2019]/g, "'")
+          .replace(/[\u201C\u201D]/g, '"')
+          .replace(/[\u2013\u2014]/g, "-")
+          .replace(/[\u200D\uFE00-\uFE0F]/g, "")
+          .replace(/[\u2190-\u21FF\u2300-\u27BF\u2B00-\u2BFF]/g, "")
+          .replace(/[\uD800-\uDFFF]/g, "")
+          .replace(/[^\t\n\r\x20-\x7E\u00A0-\u00FF]/g, "")
+          .replace(/\s+/g, " ")
+          .trim();
+      }
+
       function block(text, size, style, color, gap) {
         doc.setFont("helvetica", style || "normal");
         doc.setFontSize(size);
+        doc.setCharSpace(0);
         if (color) doc.setTextColor(color[0], color[1], color[2]);
         else doc.setTextColor(20, 20, 20);
-        const lines = doc.splitTextToSize(String(text || ""), width);
+        const lines = doc.splitTextToSize(pdfSafe(text), width);
         const lh = size * 1.35;
         lines.forEach((line) => {
           ensure(lh + 8);
@@ -736,52 +765,117 @@
       }
 
       function bullets(items, ordered) {
+        const bodyWidth = width - 22;
         (items && items.length ? items : ["Nothing to list."]).forEach((item, idx) => {
-          const prefix = ordered ? (idx + 1) + ". " : "• ";
-          const lines = doc.splitTextToSize(prefix + String(item), width);
+          const prefix = ordered ? (idx + 1) + ".  " : "-  ";
+          const lines = doc.splitTextToSize(pdfSafe(item), bodyWidth);
           doc.setFont("helvetica", "normal");
           doc.setFontSize(11);
-          doc.setTextColor(30, 30, 30);
-          lines.forEach((line) => {
-            ensure(20);
-            y += 16;
-            doc.text(line, left, y);
+          doc.setCharSpace(0);
+          doc.setTextColor(55, 65, 81);
+          lines.forEach((line, i) => {
+            ensure(18);
+            y += 15;
+            if (i === 0) doc.text(prefix + line, left, y);
+            else doc.text(line, left + 18, y);
           });
           y += 6;
         });
         y += 8;
       }
 
-      block("SpaceXAI Miami Community QA Hub", 10, "normal", [90, 90, 90], 12);
-      block("Website checkup report", 20, "bold", [17, 17, 17], 10);
-      block("Site tested: " + (result.url || ""), 11, "normal", [60, 60, 60], 12);
+      function section(label, color) {
+        ensure(40);
+        y += 10;
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
+        doc.setCharSpace(0);
+        doc.setTextColor(color[0], color[1], color[2]);
+        y += 16;
+        doc.text(pdfSafe(label), left, y);
+        y += 8;
+        doc.setDrawColor(229, 231, 235);
+        doc.setLineWidth(0.8);
+        doc.line(left, y, right, y);
+        y += 10;
+      }
+
+      function finding(item) {
+        const title = pdfSafe(item.title || "");
+        const detail = pdfSafe(item.detail || "");
+        const badges = (item.badges || []).map(pdfSafe).filter(Boolean).join(", ");
+        ensure(36);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.setCharSpace(0);
+        doc.setTextColor(17, 24, 39);
+        const titleLines = doc.splitTextToSize("-  " + title, width);
+        titleLines.forEach((line, i) => {
+          ensure(16);
+          y += 15;
+          doc.text(i === 0 ? line : line.replace(/^-  /, "   "), i === 0 ? left : left + 18, y);
+        });
+        if (detail) {
+          doc.setFont("helvetica", "normal");
+          doc.setTextColor(75, 85, 99);
+          const detailLines = doc.splitTextToSize(detail, width - 18);
+          detailLines.forEach((line) => {
+            ensure(16);
+            y += 14;
+            doc.text(line, left + 18, y);
+          });
+        }
+        if (badges) {
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(10);
+          doc.setTextColor(107, 114, 128);
+          const badgeLines = doc.splitTextToSize("Highlights: " + badges, width - 18);
+          badgeLines.forEach((line) => {
+            ensure(14);
+            y += 13;
+            doc.text(line, left + 18, y);
+          });
+        }
+        y += 10;
+      }
+
+      block("SpaceXAI Miami Community QA Hub", 10, "normal", [107, 114, 128], 8);
+      block("Website checkup report", 20, "bold", [17, 24, 39], 8);
+      block("Site tested: " + (result.url || ""), 11, "normal", [75, 85, 99], 10);
       block(
-        "Health score: " + result.score + " out of 100    Letter grade: " + result.grade,
+        "Health score: " + result.score + " out of 100     Letter grade: " + result.grade,
         13,
         "bold",
-        [17, 17, 17],
+        [17, 24, 39],
         8
       );
-      block(result.summary || "See the findings below.", 11, "normal", [30, 30, 30], 16);
+      block(result.summary || "See the findings below.", 11, "normal", [55, 65, 81], 12);
       const mods = result.modules || {};
-      function dumpMod(label, color, items) {
-        block(label, 13, "bold", color, 8);
+      function dumpMod(label, color, items, emptyCopy) {
+        section(label, color);
         if (!items || !items.length) {
-          block("None on this pass.", 11, "italic", [90, 90, 90], 10);
+          bullets([emptyCopy], false);
           return;
         }
-        items.forEach((m) => {
-          const badgeLine = (m.badges && m.badges.length) ? " Highlights: " + m.badges.join(", ") : "";
-          bullets([m.title + " — " + m.detail + badgeLine], false);
-        });
+        items.forEach((m) => finding(m));
       }
-      dumpMod("Critical Traps", [176, 16, 96], mods.critical);
-      dumpMod("Warnings", [160, 100, 0], mods.warnings);
-      dumpMod("Optimizations", [0, 110, 130], mods.optimizations);
-      block("What to do next", 14, "bold", [176, 16, 96], 8);
-      block("Work from the top. Several items are writing or layout — you can start even if you are not an engineer.", 11, "italic", [40, 40, 40], 8);
+      dumpMod(
+        "Critical Traps",
+        [219, 39, 119],
+        mods.critical,
+        "Zero Core Crashes Detected! Your server infrastructure is rock-solid."
+      );
+      dumpMod(
+        "Warnings",
+        [219, 39, 119],
+        mods.warnings,
+        "No Compliance Violations Found! Your layout structure is fully optimized."
+      );
+      dumpMod("Optimizations", [219, 39, 119], mods.optimizations, "None.");
+      section("What to do next", [219, 39, 119]);
+      block("Work from the top. Several items are writing or layout - you can start even if you are not an engineer.", 11, "italic", [75, 85, 99], 8);
       bullets(result.action_items, true);
-      block("What went well", 14, "bold", [176, 16, 96], 8);
+      section("What went well", [219, 39, 119]);
       bullets(result.badges, false);
       drawFooter();
       doc.save("spacexai-miami-qa-report.pdf");
@@ -807,8 +901,8 @@
               backgroundColor: "#ffffff",
               useCORS: true,
               logging: false,
-              windowWidth: 612,
-              width: 612,
+              windowWidth: 800,
+              width: 800,
               scrollX: 0,
               scrollY: 0,
             },

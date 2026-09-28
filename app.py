@@ -11,6 +11,7 @@ import threading
 import traceback
 import uuid
 from datetime import datetime
+from html import escape
 from typing import Any
 from urllib.parse import urlparse
 
@@ -631,6 +632,23 @@ def compile_severity_modules(auditor: dict[str, Any], detective: dict[str, Any])
             }
         )
 
+    if not critical:
+        critical.append(
+            {
+                "title": "✅ Zero Core Crashes Detected! Your server infrastructure is rock-solid.",
+                "detail": "",
+                "badges": [],
+            }
+        )
+    if not warnings:
+        warnings.append(
+            {
+                "title": "✅ No Compliance Violations Found! Your layout structure is fully optimized.",
+                "detail": "",
+                "badges": [],
+            }
+        )
+
     return {"critical": critical, "warnings": warnings, "optimizations": optimizations}
 
 
@@ -645,7 +663,11 @@ def flatten_modules(modules: dict[str, list[dict[str, Any]]]) -> list[str]:
             badges = item.get("badges") or []
             badge_txt = ", ".join(badges[:8])
             extra = f" Affected: {badge_txt}." if badge_txt else ""
-            lines.append(f"[{heading}] {item['title']} — {item['detail']}{extra}")
+            detail = (item.get("detail") or "").strip()
+            if detail:
+                lines.append(f"[{heading}] {item['title']} — {detail}{extra}")
+            else:
+                lines.append(f"[{heading}] {item['title']}{extra}")
     return lines
 
 
@@ -750,10 +772,10 @@ def render_markdown(url: str, card: dict[str, Any], chaos: dict, auditor: dict, 
 
 ## What we found
 ### [CRITICAL TRAPS]
-{bullets([f"**{m['title']}** — {m['detail']}  Highlights: {', '.join(m.get('badges') or [])}" for m in modules['critical']], 'None.')}
+{bullets([f"**{m['title']}** — {m['detail']}  Highlights: {', '.join(m.get('badges') or [])}" if (m.get('detail') or m.get('badges')) else f"**{m['title']}**" for m in modules['critical']], '✅ Zero Core Crashes Detected! Your server infrastructure is rock-solid.')}
 
 ### [WARNINGS]
-{bullets([f"**{m['title']}** — {m['detail']}" for m in modules['warnings']], 'None.')}
+{bullets([f"**{m['title']}** — {m['detail']}" if m.get('detail') else f"**{m['title']}**" for m in modules['warnings']], '✅ No Compliance Violations Found! Your layout structure is fully optimized.')}
 
 ### [OPTIMIZATIONS]
 {bullets([f"**{m['title']}** — {m['detail']}" for m in modules['optimizations']], 'None.')}
@@ -771,6 +793,124 @@ Work top to bottom. You do not need to be an engineer to start — several items
 ---
 *SpaceXAI Miami Community QA Hub · written so anyone on the team can act on it*
 """
+
+
+_PDF_WRAP_STYLE = (
+    'style="max-width: 800px; margin: 0 auto; padding: 40px; '
+    "font-family: 'Inter', system-ui, sans-serif; color: #1f2937; text-align: left;\""
+)
+_PDF_H2_STYLE = (
+    'style="color: #db2777; font-size: 1.25rem; font-weight: 700; '
+    'margin-top: 24px; margin-bottom: 12px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px;"'
+)
+_PDF_P_STYLE = (
+    'style="font-size: 0.95rem; line-height: 1.5; color: #4b5563; margin-bottom: 8px; text-align: left;"'
+)
+_PDF_UL_STYLE = 'style="padding-left: 20px; list-style-type: disc; text-align: left;"'
+_PDF_LI_STYLE = (
+    'style="padding-left: 20px; list-style-type: disc; font-size: 0.95rem; '
+    'line-height: 1.5; color: #4b5563; margin-bottom: 8px; text-align: left;"'
+)
+_PDF_OL_STYLE = 'style="padding-left: 20px; list-style-type: decimal; text-align: left;"'
+_PDF_OL_LI_STYLE = (
+    'style="padding-left: 20px; font-size: 0.95rem; '
+    'line-height: 1.5; color: #4b5563; margin-bottom: 8px; text-align: left;"'
+)
+_PDF_META_STYLE = (
+    'style="font-size: 0.85rem; line-height: 1.5; color: #6b7280; margin-bottom: 8px; text-align: left;"'
+)
+_PDF_H1_STYLE = (
+    'style="font-size: 1.75rem; font-weight: 800; color: #111827; margin: 0 0 12px; text-align: left;"'
+)
+_PDF_CRIT_CLEAR = "Zero Core Crashes Detected! Your server infrastructure is rock-solid."
+_PDF_WARN_CLEAR = "No Compliance Violations Found! Your layout structure is fully optimized."
+
+
+def _pdf_p(text: str, *, strong: bool = False) -> str:
+    inner = f"<strong>{text}</strong>" if strong else text
+    return f"<p {_PDF_P_STYLE}>{inner}</p>"
+
+
+def _pdf_li(text: str) -> str:
+    return f"<li {_PDF_LI_STYLE}>{text}</li>"
+
+
+def _pdf_ul(items_html: str) -> str:
+    return f"<ul {_PDF_UL_STYLE}>{items_html}</ul>"
+
+
+def _pdf_h2(title: str) -> str:
+    return f"<h2 {_PDF_H2_STYLE}>{escape(title)}</h2>"
+
+
+def _pdf_module_list(items: list[dict[str, Any]], empty: str) -> str:
+    rows: list[str] = []
+    source = items if items else [{"title": empty, "detail": "", "badges": []}]
+    for item in source:
+        title = escape(str(item.get("title") or ""))
+        detail = escape(str(item.get("detail") or "").strip())
+        badges = ", ".join(str(badge) for badge in (item.get("badges") or [])[:12])
+        line = f"<strong>{title}</strong>"
+        if detail:
+            line += f" — {detail}"
+        if badges:
+            line += f" Highlights: {escape(badges)}"
+        rows.append(_pdf_li(line))
+    return _pdf_ul("".join(rows))
+
+
+def render_pdf_html(
+    url: str,
+    card: dict[str, Any],
+    chaos: dict,
+    auditor: dict,
+    detective: dict,
+    modules: dict[str, list[dict[str, Any]]] | None = None,
+) -> str:
+    """HTML sheet consumed by the browser PDF exporter."""
+    modules = modules or compile_severity_modules(auditor, detective)
+    actions = actions_from_modules(modules) or build_action_items(auditor, detective)
+    summary = escape(score_in_plain_english(card["score"], card["grade"]))
+    action_lis = "".join(
+        f"<li {_PDF_OL_LI_STYLE}>{escape(item)}</li>"
+        for item in (actions or ["No follow-ups. You can share this page with confidence."])[:20]
+    )
+    badge_lis = "".join(_pdf_li(escape(str(badge))) for badge in (card.get("badges") or ["Keep iterating."]))
+    opt_items = modules.get("optimizations") or []
+    if opt_items:
+        opt_html = _pdf_ul(
+            "".join(
+                _pdf_li(
+                    f"<strong>{escape(str(m.get('title') or ''))}</strong>"
+                    + (
+                        f" — {escape(str(m.get('detail') or '').strip())}"
+                        if str(m.get("detail") or "").strip()
+                        else ""
+                    )
+                )
+                for m in opt_items
+            )
+        )
+    else:
+        opt_html = _pdf_p("None.")
+    return f"""<div {_PDF_WRAP_STYLE}>
+<p {_PDF_META_STYLE}>SpaceXAI Miami Community QA Hub</p>
+<h1 {_PDF_H1_STYLE}>Website checkup report</h1>
+<p {_PDF_P_STYLE}>Site tested: {escape(url)}</p>
+<p {_PDF_P_STYLE}><strong>Health score:</strong> {escape(str(card.get('score', 0)))} out of 100 · <strong>Letter grade:</strong> {escape(str(card.get('grade', '—')))}</p>
+{_pdf_p(summary)}
+{_pdf_h2("Critical Traps")}
+{_pdf_module_list(modules.get("critical") or [], _PDF_CRIT_CLEAR)}
+{_pdf_h2("Warnings")}
+{_pdf_module_list(modules.get("warnings") or [], _PDF_WARN_CLEAR)}
+{_pdf_h2("Optimizations")}
+{opt_html}
+{_pdf_h2("What to do next")}
+{_pdf_p("Work from the top. Several items are writing or layout — you can start even if you are not an engineer.")}
+<ol {_PDF_OL_STYLE}>{action_lis}</ol>
+{_pdf_h2("What went well")}
+{_pdf_ul(badge_lis)}
+</div>"""
 
 
 A11Y_SCAN_JS = """
@@ -1205,6 +1345,7 @@ def publish_raid_result(
         card["grade"] = grade_for(card["score"])
     modules = compile_severity_modules(auditor, detective)
     markdown = render_markdown(url, card, chaos, auditor, detective)
+    pdf_html = render_pdf_html(url, card, chaos, auditor, detective, modules)
     job["result"] = {
         "url": url,
         "score": card["score"],
@@ -1216,6 +1357,7 @@ def publish_raid_result(
         "action_items": actions_from_modules(modules) or build_action_items(auditor, detective),
         "modules": modules,
         "markdown": markdown,
+        "pdf_html": pdf_html,
         "chaos": chaos,
         "auditor": auditor,
         "detective": detective,
@@ -1267,7 +1409,31 @@ async def run_simulation_engine(job: dict[str, Any], url: str) -> None:
                 continue
         emit(job, agent, message, level)
         await asyncio.sleep(0.18)
-    publish_raid_result(job, url, chaos, auditor, detective, forced_score=score)
+    try:
+        publish_raid_result(job, url, chaos, auditor, detective, forced_score=score)
+    except Exception as sim_exc:  # noqa: BLE001
+        job["status"] = "error"
+        sim_detail = f"{sim_exc.__class__.__name__}: {sim_exc}" if str(sim_exc) else sim_exc.__class__.__name__
+        emit(job, "HQ", f"Report compile failed: {sim_detail}", "error")
+        job["result"] = {
+            "url": url,
+            "score": 0,
+            "grade": "F",
+            "badges": ["Raid Failed"],
+            "deductions": [sim_detail],
+            "summary": "The checkup ran, but the report sheet could not be assembled.",
+            "findings": [sim_detail],
+            "action_items": ["Retry Test App."],
+            "modules": {
+                "critical": [
+                    {"title": "Report could not finish", "detail": sim_detail, "badges": ["Compile failed"]}
+                ],
+                "warnings": [],
+                "optimizations": [],
+            },
+            "markdown": f"# Website checkup report\n\nCould not assemble the report.\n\n{sim_detail}\n",
+            "finished_at": datetime.now().isoformat(timespec="seconds"),
+        }
 
 
 async def run_raid(job_id: str, url: str) -> None:
