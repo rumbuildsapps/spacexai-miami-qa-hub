@@ -5,7 +5,15 @@
 
 Welcome to the **SpaceXAI Miami Community QA Hub**—a public, multi-agent autonomous playground built using our **Grok Bot** credits to act as an instant safety net for early-stage builders. 
 
-Instead of a boring text wrapper, this app spins up a headless browser cluster inside a persistent cloud Linux container to ruthlessly assault, audit, and wiretap your staging URLs before you push them to production.
+Instead of a boring text wrapper, this app spins up a headless browser cluster to ruthlessly assault, audit, and wiretap your staging URLs before you push them to production.
+
+---
+
+## ☁️ Cloud Live Demo Note (For Judges & Reviewers)
+> **🚀 How to test this live on our Cloud URL right now:**  
+> Free-tier cloud hosting containers strictly limit background browser clustering. To safeguard our server and demonstrate our engine, we engineered an **Adaptive Simulation Fallback**. 
+> 
+> When testing our live cloud URL link, simply click the **"Use local sandbox URL"** button on the dashboard. This will perfectly orchestrate and simulate our entire multi-agent chaos engineering loop, stream live neon telemetry, calculate scores, and generate a downloadable report!
 
 ---
 
@@ -31,7 +39,7 @@ Every staging surface starts with a flawless **100/100 Stability Score**. The ag
 *   `-11 points` per critical structural or accessibility violation.
 *   `-4 points` per layout collision or form handling error.
 
-The result? A localized, interactive dashboard with **live telemetry streams**, a dynamic scoring ring widget, an automated **Actionable Developer Fixes** engine, and a **Download PDF Report** system for quick distribution.
+The result? A localized, interactive dashboard with **live telemetry streams**, dynamic color-coded category badges, an automated **Actionable Developer Fixes** engine, and a high-contrast **Download PDF Report** system for quick distribution.
 
 ---
 
@@ -42,7 +50,7 @@ The result? A localized, interactive dashboard with **live telemetry streams**, 
 *   **Frontend UX:** Modern "Miami Cyberpunk" Dark-Mode Theme powered by Tailwind CSS.
 
 ### 🏃‍♂️ Running It Locally
-Ensure your environment variables are configured, then initialize the pipeline:
+To run the full raw headless browser cluster locally on your machine, initialize the pipeline:
 
 ```bash
 # 1. Install the core infrastructure dependencies
@@ -60,4 +68,4 @@ Open `http://127.0.0.1:8000` and start stress-testing!
 ---
 
 ## 🏆 Created for the SpaceXAI Miami Tech Competition
-Built with ❤️ by a QA Engineer looking to accelerate shipping velocity across the Miami builder ecosystem. Remember: Production is a sacred place. Protect it.
+Built with ❤️ by a local QA Specialist looking to accelerate shipping velocity across the Miami builder ecosystem. Remember: Production is a sacred place. Protect it.
