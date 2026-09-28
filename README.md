@@ -15,7 +15,7 @@ Instead of a boring text wrapper, this app spins up a headless browser cluster t
 > **🚀 How to test this live on our Cloud URL right now:**  
 > Free-tier cloud hosting containers strictly limit background browser clustering. To safeguard our server and demonstrate our engine, we engineered an **Adaptive Simulation Fallback**. 
 > 
-> When testing our live cloud URL link, simply click the **"Use local sandbox URL"** button on the dashboard. This will perfectly orchestrate and simulate our entire multi-agent chaos engineering loop, stream live neon telemetry, calculate scores, and generate a downloadable report!
+> When testing our live cloud URL link, simply click the **"Use local sandbox URL"** button on the dashboard. This will perfectly orchestrate and simulate our entire multi-agent chaos engineering loop, stream live neon telemetry, calculate scores, and generate a downloadable report! You can also use other websites for testing: amazon, linkedin, etc.
 
 ---
 
