@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SpaceXAI Miami Community QA Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@500;700;800&family=Roboto+Mono:wght@400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            night: "#050510",
+            neonpink: "#ff2d95",
+            neoncyan: "#22f0ff",
+            miami: "#ff6b35",
+            violet: "#c026ff",
+          },
+          fontFamily: {
+            sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+            display: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+            body: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+            mono: ["Roboto Mono", "ui-monospace", "monospace"],
+          },
+          boxShadow: {
+            neon: "0 0 24px rgba(255, 45, 149, 0.45), 0 0 48px rgba(34, 240, 255, 0.18)",
+            cyan: "0 0 18px rgba(34, 240, 255, 0.35)",
+          },
+        },
+      },
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.2/dist/html2pdf.bundle.min.js"></script>
+  <style>
+    :root { color-scheme: dark; }
+    body {
+      background:
+        radial-gradient(1200px 600px at 10% -10%, rgba(255, 45, 149, 0.18), transparent 55%),
+        radial-gradient(900px 500px at 110% 0%, rgba(34, 240, 255, 0.14), transparent 50%),
+        radial-gradient(700px 400px at 50% 120%, rgba(192, 38, 255, 0.12), transparent 50%),
+        #050510;
+    }
+    .grid-overlay {
+      background-image:
+        linear-gradient(rgba(34, 240, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 45, 149, 0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+    .agent-pill {
+      box-sizing: border-box;
+      border: 1px solid transparent;
+      box-shadow: none;
+      outline: none;
+    }
+    #pill-a.agent-pill { border-color: rgba(244, 114, 182, 0.5); }
+    #pill-b.agent-pill { border-color: rgba(34, 211, 238, 0.5); }
+    #pill-c.agent-pill { border-color: rgba(196, 181, 253, 0.5); }
+    .agent-pill, .agent-pill span {
+      font-family: "Share Tech Mono", "Roboto Mono", ui-monospace, monospace !important;
+    }
+    #pill-a [data-state] { color: rgb(249, 168, 212); }
+    #pill-b [data-state] { color: rgb(103, 232, 249); }
+    #pill-c [data-state] { color: rgb(196, 181, 253); }
+    .neon-border {
+      border: 1px solid rgba(34, 240, 255, 0.45);
+      box-shadow:
+        inset 0 0 24px rgba(34, 240, 255, 0.06),
+        0 0 18px rgba(255, 45, 149, 0.18);
+    }
+    .scanline::after {
+      content: "";
+      pointer-events: none;
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent 3px,
+        rgba(0, 0, 0, 0.12) 3px,
+        rgba(0, 0, 0, 0.12) 4px
+      );
+    }
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 12px rgba(255, 45, 149, 0.4), 0 0 24px rgba(34, 240, 255, 0.2); }
+      50% { box-shadow: 0 0 28px rgba(255, 45, 149, 0.75), 0 0 40px rgba(34, 240, 255, 0.4); }
+    }
+    .live-glow { animation: pulseGlow 2.2s ease-in-out infinite; }
+    #test-btn {
+      font-family: Orbitron, Inter, sans-serif !important;
+    }
+    .onboard {
+      background: rgba(18, 10, 48, 0.78);
+      border: 1px solid rgba(192, 38, 255, 0.75);
+      box-shadow: 0 0 22px rgba(192, 38, 255, 0.38), inset 0 0 24px rgba(88, 28, 135, 0.25);
+    }
+    #onboard-dismiss {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 50;
+      pointer-events: auto;
+    }
+    html, body, button, a, h1, h2, h3, h4, p, span, label, input, li {
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    }
+    #terminal, #terminal * {
+      font-family: "Roboto Mono", ui-monospace, monospace !important;
+    }
+    a.asset-tag, .asset-tag {
+      display: inline-block;
+      font-family: "Roboto Mono", ui-monospace, monospace !important;
+      font-size: 10px;
+      line-height: 1.3;
+      padding: 2px 6px;
+      border-radius: 2px;
+      border: 1px solid #3f3f46;
+      background: #27272a;
+      color: #e4e4e7;
+      margin: 2px 2px 2px 0;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+    }
+    a.asset-tag:hover {
+      transform: scale(1.07);
+      border-color: #22f0ff;
+      box-shadow: 0 0 12px rgba(34, 240, 255, 0.5);
+      color: #ffffff;
+    }
+    .tel-hit {
+      background: rgba(34, 240, 255, 0.18);
+      outline: 1px solid rgba(34, 240, 255, 0.55);
+      border-radius: 4px;
+    }
+    .sev-mod { border-radius: 0.85rem; padding: 0.85rem 1rem 1rem; margin: 0.85rem 0; overflow: hidden; }
+    .sev-item { margin-bottom: 0.7rem; }
+    .sev-banner {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+      text-align: center;
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      padding: 0.62rem 1rem;
+      border-radius: 999px;
+      margin-bottom: 0.9rem;
+    }
+    .sev-crit { border: 1px solid rgba(255, 45, 77, 0.35); background: rgba(40, 4, 12, 0.55); }
+    .sev-banner-crit {
+      background: #3b050c;
+      border: 1px solid #ff2d55;
+      color: #ff6b81;
+      box-shadow: 0 0 18px rgba(255, 45, 85, 0.5);
+    }
+    .sev-warn { border: 1px solid rgba(255, 183, 3, 0.28); background: rgba(42, 28, 4, 0.5); }
+    .sev-banner-warn {
+      background: #3a2204;
+      border: 1px solid #ffb703;
+      color: #ffd166;
+      box-shadow: 0 0 18px rgba(255, 183, 3, 0.45);
+    }
+    .sev-opt { border: 1px solid rgba(34, 240, 255, 0.28); background: rgba(4, 28, 36, 0.5); }
+    .sev-banner-opt {
+      background: #042830;
+      border: 1px solid #22f0ff;
+      color: #7af6ff;
+      box-shadow: 0 0 18px rgba(34, 240, 255, 0.4);
+    }
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: #ff2d95 rgba(5, 5, 16, 0.25);
+    }
+    *::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    *::-webkit-scrollbar-track {
+      background: rgba(5, 5, 16, 0.35);
+      border-radius: 99px;
+    }
+    *::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #ff2d95 0%, #22f0ff 100%);
+      border-radius: 99px;
+      border: 2px solid rgba(5, 5, 16, 0.65);
+      background-clip: padding-box;
+    }
+    *::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, #ff5aad 0%, #6af7ff 100%);
+    }
+    *::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+    .report h1 { font-family: Inter, ui-sans-serif, sans-serif; font-size: 1.35rem; color: #22f0ff; margin-bottom: 0.75rem; }
+    .report h2 { font-family: Inter, ui-sans-serif, sans-serif; font-size: 1.05rem; color: #ff2d95; margin: 1.25rem 0 0.5rem; }
+    .report h3 { color: #ffb703; font-size: 0.95rem; margin: 0.85rem 0 0.35rem; }
+    .report p, .report li { color: #d6e4ff; }
+    .report code { color: #22f0ff; background: rgba(34, 240, 255, 0.08); padding: 0.1rem 0.35rem; border-radius: 0.25rem; }
+    .report ul, .report ol { padding-left: 1.2rem; }
+    .report ul { list-style: disc; }
+    .report ol { list-style: decimal; }
+    .report hr { border-color: rgba(34, 240, 255, 0.2); margin: 1.25rem 0; }
+    #pdf-stage {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 612px;
+      background: #ffffff;
+      color: #1a1a1a;
+      z-index: 2147483000;
+      pointer-events: none;
+      opacity: 1;
+    }
+    #pdf-stage.is-off { left: -100vw; }
+    #pdf-sheet {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 12px;
+      line-height: 1.4;
+      padding: 20px 22px 28px;
+      width: 612px;
+      max-width: 612px;
+      box-sizing: border-box;
+      background: #ffffff;
+      color: #1a1a1a;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    #pdf-sheet h1 { font-family: Arial, Helvetica, sans-serif; font-size: 20px; margin: 0 0 8px; color: #111; }
+    #pdf-sheet h2 { font-family: Arial, Helvetica, sans-serif; font-size: 14px; margin: 16px 0 8px; color: #b01060; }
+    #pdf-sheet p, #pdf-sheet li {
+      color: #222;
+      margin: 0 0 8px;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      max-width: 100%;
+    }
+    #pdf-sheet ol, #pdf-sheet ul { margin: 0 0 8px; padding-left: 20px; }
+    #pdf-sheet .meta { font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #444; }
+    #pdf-sheet .scorebox {
+      border: 2px solid #111;
+      padding: 10px 12px;
+      margin: 12px 0 16px;
+      background: #f7f7f7;
+    }
+  </style>
+  <script>
+    function closeOnboardingGuide() {
+      var box = document.getElementById("onboarding-box");
+      var openBtn = document.getElementById("open-guide-btn");
+      if (box) box.style.display = "none";
+      if (openBtn) openBtn.style.display = "inline-flex";
+    }
+    function openOnboardingGuide() {
+      var box = document.getElementById("onboarding-box");
+      var openBtn = document.getElementById("open-guide-btn");
+      if (box) box.style.display = "block";
+      if (openBtn) openBtn.style.display = "none";
+    }
+  </script>
+</head>
+<body class="min-h-screen text-cyan-50 font-sans grid-overlay">
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    <header class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8">
+      <div>
+        <p class="font-sans text-neoncyan tracking-[0.35em] text-xs mb-2">SPACEXAI · MIAMI · COMMUNITY OPS</p>
+        <h1 class="font-sans text-3xl md:text-5xl font-extrabold leading-tight">
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-neoncyan via-white to-neonpink">QA HUB</span>
+        </h1>
+      </div>
+      <nav class="flex flex-wrap items-center justify-end gap-3 shrink-0">
+        <button
+          id="open-guide-btn"
+          type="button"
+          style="display: none;"
+          onclick="var b=document.getElementById('onboarding-box');var g=document.getElementById('open-guide-btn');if(b)b.style.display='block';if(g)g.style.display='none';"
+          class="inline-flex items-center whitespace-nowrap font-sans text-xs font-bold tracking-wider px-4 py-2 neon-border rounded-md text-neoncyan hover:bg-cyan-400/10 cursor-pointer"
+        >VIEW SETUP GUIDE ↗</button>
+        <a href="/sandbox" target="_blank" class="inline-flex items-center whitespace-nowrap font-sans text-xs font-bold tracking-wider px-4 py-2 neon-border rounded-md text-neoncyan hover:bg-cyan-400/10">
+          OPEN BROKEN SANDBOX ↗
+        </a>
+      </nav>
+    </header>
+
+    <section class="neon-border rounded-2xl p-5 md:p-6 bg-black/40 backdrop-blur mb-6">
+      <div id="onboarding-box" class="onboard relative rounded-xl p-4 md:p-5 mb-5 pr-14">
+        <button
+          id="onboard-dismiss"
+          type="button"
+          onclick="var b=document.getElementById('onboarding-box');var g=document.getElementById('open-guide-btn');if(b)b.style.display='none';if(g)g.style.display='inline-flex';"
+          class="absolute top-3 right-3 z-50 w-8 h-8 rounded-md border border-violet-300/50 text-violet-100 hover:bg-violet-500/20 font-sans text-sm cursor-pointer"
+          style="z-index: 50;"
+          aria-label="Dismiss how it works"
+        >X</button>
+        <p class="font-sans text-xs tracking-[0.25em] text-fuchsia-400 mb-2">HOW IT WORKS &amp; FOUNDER STORY</p>
+        <p class="text-fuchsia-50/95 leading-relaxed pr-8">
+          This public utility was built using Grok Bot credits for the SpaceXAI Miami Community to safeguard production builds before pitching to users or investors.
+        </p>
+        <p class="mt-3 text-cyan-100/90 leading-relaxed italic">
+          Designed by a dedicated local QA Specialist who understands the pain of flaky test suites and broken user experiences. Built by leveraging autonomous AI agents to give Miami builders an elite corporate QA department in a single click.
+        </p>
+        <p class="font-sans text-xs tracking-[0.25em] text-neoncyan mt-4 mb-2">HOW TO RUN IT</p>
+        <ol class="list-decimal pl-5 space-y-1 text-fuchsia-50/90">
+          <li>Paste any live staging URL or launch our built-in broken sandbox target.</li>
+          <li>Watch the live terminal orchestrate parallel Chromium agent raiders.</li>
+          <li>Download your non-technical executive business health report.</li>
+        </ol>
+        <p class="font-sans text-xs tracking-[0.25em] text-neonpink mt-4 mb-2">SCORING LOGIC</p>
+        <p class="text-fuchsia-50/90 leading-relaxed">
+          Apps start at a flawless <strong>100</strong>. Points bleed by severity:
+          <strong>−12</strong> for server/network crashes,
+          <strong>−11</strong> for critical accessibility/structural gaps, and
+          <strong>−4</strong> for element collisions.
+        </p>
+      </div>
+      <form id="raid-form" class="flex flex-col md:flex-row gap-3">
+        <label class="sr-only" for="url">Staging URL</label>
+        <input
+          id="url"
+          name="url"
+          type="url"
+          required
+          placeholder="https://your-app.staging.example.com"
+          value=""
+          class="flex-1 bg-night/80 border border-cyan-400/30 focus:border-neonpink focus:ring-2 focus:ring-neonpink/40 rounded-xl px-4 py-3 font-sans text-sm text-cyan-50 outline-none"
+        />
+        <button
+          id="test-btn"
+          type="submit"
+          class="live-glow font-display tracking-widest text-sm px-8 py-3 rounded-xl bg-gradient-to-r from-neonpink to-miami text-night font-bold hover:brightness-110 disabled:opacity-50"
+        >
+          TEST APP
+        </button>
+      </form>
+      <div class="mt-3 flex flex-wrap items-center gap-3">
+        <button type="button" id="sandbox-fill" class="font-sans text-[11px] text-neoncyan underline underline-offset-4">
+          Use local sandbox URL
+        </button>
+        <p id="status-line" class="font-sans text-xs text-fuchsia-200/70">Awaiting target.</p>
+      </div>
+      <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div id="pill-a" class="agent-pill rounded-lg px-3 py-2 text-xs font-mono">AGENT A · CHAOS CLIENT<span class="block" data-state>STANDBY</span></div>
+        <div id="pill-b" class="agent-pill rounded-lg px-3 py-2 text-xs font-mono">AGENT B · DOM AUDITOR<span class="block" data-state>STANDBY</span></div>
+        <div id="pill-c" class="agent-pill rounded-lg px-3 py-2 text-xs font-mono">AGENT C · CONSOLE DETECTIVE<span class="block" data-state>STANDBY</span></div>
+      </div>
+    </section>
+
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:items-stretch">
+      <section class="lg:col-span-2 neon-border rounded-2xl bg-black/50 overflow-hidden relative scanline flex flex-col min-h-[520px]">
+        <div class="flex items-center justify-between px-4 py-3 border-b border-cyan-400/20 shrink-0">
+          <h2 class="font-sans text-sm tracking-widest text-neoncyan">LIVE TELEMETRY</h2>
+          <span class="font-sans text-[10px] text-pink-300">/dev/tty.raid</span>
+        </div>
+        <div id="terminal" class="flex-1 min-h-0 overflow-y-auto p-4 font-mono text-[12px] leading-relaxed space-y-1"></div>
+      </section>
+
+      <section class="lg:col-span-3 space-y-6 flex flex-col">
+        <div class="neon-border rounded-2xl p-5 bg-black/45 flex flex-col sm:flex-row gap-6 items-center shrink-0">
+          <div class="relative w-40 h-40 shrink-0">
+            <svg viewBox="0 0 120 120" class="w-full h-full -rotate-90">
+              <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(34,240,255,0.15)" stroke-width="10" />
+              <circle id="score-ring" cx="60" cy="60" r="52" fill="none" stroke="#ff2d95" stroke-width="10"
+                stroke-linecap="round" stroke-dasharray="326.73" stroke-dashoffset="326.73" />
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+              <span id="score-value" class="font-sans text-4xl font-extrabold text-white">--</span>
+              <span class="font-sans text-[10px] text-neoncyan">STABILITY</span>
+            </div>
+          </div>
+          <div class="flex-1 w-full">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <p class="font-sans text-xl font-bold text-neonpink">Resiliency Score Card</p>
+              <button
+                id="pdf-btn"
+                type="button"
+                disabled
+                class="shrink-0 font-sans tracking-wider text-[11px] font-bold px-4 py-2 rounded-lg border border-neoncyan/70 text-neoncyan bg-cyan-400/10 hover:bg-cyan-400/20 hover:shadow-cyan disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-cyan-400/10"
+              >
+                Download PDF Report
+              </button>
+            </div>
+            <p id="grade-line" class="font-sans text-sm text-cyan-100/80 mt-1">Rank: —</p>
+            <div id="badges" class="flex flex-wrap gap-2 mt-3"></div>
+          </div>
+        </div>
+
+        <div class="neon-border rounded-2xl overflow-hidden bg-black/45 flex flex-col flex-1 min-h-[420px]">
+          <div class="px-4 py-3 border-b border-pink-500/20 flex items-center justify-between shrink-0">
+            <h2 class="font-sans text-sm tracking-widest text-neonpink">RESULTS RENDER</h2>
+            <span class="font-sans text-[10px] text-cyan-300/70">severity modules · executive brief</span>
+          </div>
+          <article id="report" class="report flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-5 text-sm">
+            <p class="text-cyan-100/50 font-sans">Score card will materialize here after the raid.</p>
+          </article>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div id="pdf-stage" class="is-off" aria-hidden="true">
+    <div id="pdf-sheet"></div>
+  </div>
+
+  <script>
+    const terminal = document.getElementById("terminal");
+    const form = document.getElementById("raid-form");
+    const btn = document.getElementById("test-btn");
+    const statusLine = document.getElementById("status-line");
+    const scoreValue = document.getElementById("score-value");
+    const scoreRing = document.getElementById("score-ring");
+    const gradeLine = document.getElementById("grade-line");
+    const badges = document.getElementById("badges");
+    const report = document.getElementById("report");
+    const pdfBtn = document.getElementById("pdf-btn");
+    const pdfStage = document.getElementById("pdf-stage");
+    const pdfSheet = document.getElementById("pdf-sheet");
+    const CIRC = 2 * Math.PI * 52;
+    let source = null;
+    let hasReport = false;
+    let lastResult = null;
+
+    function closeOnboardingGuide() {
+      var box = document.getElementById("onboarding-box");
+      var openBtn = document.getElementById("open-guide-btn");
+      if (box) box.style.display = "none";
+      if (openBtn) openBtn.style.display = "inline-flex";
+    }
+
+    function openOnboardingGuide() {
+      var box = document.getElementById("onboarding-box");
+      var openBtn = document.getElementById("open-guide-btn");
+      if (box) box.style.display = "block";
+      if (openBtn) openBtn.style.display = "none";
+    }
+
+    document.getElementById("onboard-dismiss").addEventListener("click", function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      closeOnboardingGuide();
+    });
+    document.getElementById("open-guide-btn").addEventListener("click", function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      openOnboardingGuide();
+    });
+
+    const agentMap = { A: "pill-a", B: "pill-b", C: "pill-c", HQ: null };
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function formatAssetTag(raw) {
+      const s = String(raw || "").trim();
+      const img = s.match(/image\s*#?\s*(\d+)/i);
+      if (img) return "#img-" + img[1];
+      const http = s.match(/^(4\d\d|5\d\d)\s+(.+)$/);
+      if (http) return "#http-" + http[1];
+      const lower = s.toLowerCase();
+      if (lower.includes("unnamed") || lower.includes("unlabeled")) return "#ctrl-unnamed";
+      if (lower.includes("spots") && /\d+/.test(s)) return "#ctrl-x" + (s.match(/\d+/)[0]);
+      if (lower === "html lang" || lower.includes("html lang")) return "#html-lang";
+      if (lower.includes("missing main")) return "#landmark-main";
+      if (lower.includes("duplicate")) return "#id-duplicate";
+      if (lower.includes("iframe")) return "#iframe-untitled";
+      if (lower.includes("hard to read") || lower.includes("contrast")) return "#a11y-contrast";
+      if (lower.includes("no h1") || lower === "no h1") return "#h1-missing";
+      if (lower.includes("heading")) return "#heading-skip";
+      if (lower.includes("control") && /\d+\s*controls/.test(lower)) return "#hit-target";
+      if (lower.startsWith("http") || lower.startsWith("/")) {
+        return "#" + lower.replace(/^https?:\/\//, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 22);
+      }
+      const slug = lower.replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 24);
+      return "#" + (slug || "asset");
+    }
+
+    function chipRow(items) {
+      if (!items || !items.length) return "";
+      return `<div class="flex flex-wrap gap-1.5 mt-2">${items.map((b) => {
+        const tag = formatAssetTag(b);
+        return `<a href="#terminal" class="asset-tag font-mono text-[10px] bg-zinc-800 text-zinc-200 border border-zinc-600 px-1.5 py-0.5 rounded-sm" data-query="${escapeHtml(b)}" data-tag="${escapeHtml(tag)}">${escapeHtml(tag)}</a>`;
+      }).join("")}</div>`;
+    }
+
+    function jumpToTelemetry(query, tag) {
+      const lines = terminal.querySelectorAll("div");
+      lines.forEach((el) => el.classList.remove("tel-hit"));
+      const needles = [];
+      function add(s) {
+        const v = String(s || "").trim().toLowerCase();
+        if (v.length > 1 && needles.indexOf(v) === -1) needles.push(v);
+      }
+      add(query);
+      add(String(tag || "").replace(/^#/, "").replace(/-/g, " "));
+      add(String(tag || "").replace(/^#/, ""));
+      const img = String(tag || "").match(/img-(\d+)/i);
+      if (img) {
+        add("image #" + img[1]);
+        add("image " + img[1]);
+      }
+      if (/html-lang/i.test(tag || "")) add("lang");
+      if (/ctrl-unnamed/i.test(tag || "")) add("accessible name");
+      if (/h1/i.test(tag || "")) add("h1");
+      if (/landmark/i.test(tag || "")) add("main");
+      if (/contrast/i.test(tag || "")) add("contrast");
+      if (/iframe/i.test(tag || "")) add("iframe");
+      if (/http-/i.test(tag || "")) add("http");
+      let found = null;
+      lines.forEach((el) => {
+        if (found) return;
+        const t = (el.textContent || "").toLowerCase();
+        for (let i = 0; i < needles.length; i++) {
+          if (needles[i].length > 2 && t.indexOf(needles[i]) !== -1) {
+            found = el;
+            break;
+          }
+        }
+      });
+      if (!found) {
+        const words = String(query || tag || "").toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 4);
+        lines.forEach((el) => {
+          if (found) return;
+          const t = (el.textContent || "").toLowerCase();
+          if (words.some((w) => t.indexOf(w) !== -1)) found = el;
+        });
+      }
+      if (found) {
+        found.classList.add("tel-hit");
+        const top = found.offsetTop - 16;
+        terminal.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+      }
+    }
+
+    report.addEventListener("click", function (event) {
+      const tagEl = event.target.closest("a.asset-tag");
+      if (!tagEl) return;
+      event.preventDefault();
+      jumpToTelemetry(tagEl.getAttribute("data-query") || "", (tagEl.getAttribute("data-tag") || tagEl.textContent || "").trim());
+    });
+
+    function moduleBlock(label, items, klass, bannerClass) {
+      const body = (!items || !items.length)
+        ? `<p class="text-cyan-100/50">None on this pass.</p>`
+        : items.map((m) => `
+            <div class="sev-item">
+              <p class="font-bold text-white">${escapeHtml(m.title)}</p>
+              <p class="text-fuchsia-50/90">${escapeHtml(m.detail)}</p>
+              ${chipRow(m.badges)}
+            </div>`).join("");
+      return `<section class="sev-mod ${klass}"><div class="sev-banner ${bannerClass}">${escapeHtml(label)}</div>${body}</section>`;
+    }
+
+    function renderVisualReport(result) {
+      const mods = result.modules || { critical: [], warnings: [], optimizations: [] };
+      const actions = result.action_items || [];
+      const actionHtml = actions.length
+        ? `<ol class="list-decimal pl-5 space-y-2">${actions.map((a) => `<li>${escapeHtml(a)}</li>`).join("")}</ol>`
+        : `<p class="text-cyan-100/50">No follow-ups. You can share this page with confidence.</p>`;
+      report.innerHTML = `
+        <p class="text-cyan-100 mb-3">${escapeHtml(result.summary || "")}</p>
+        ${moduleBlock("Critical Traps", mods.critical, "sev-crit", "sev-banner-crit")}
+        ${moduleBlock("Warnings", mods.warnings, "sev-warn", "sev-banner-warn")}
+        ${moduleBlock("Optimizations", mods.optimizations, "sev-opt", "sev-banner-opt")}
+        <h2>What to do next</h2>
+        <p class="text-fuchsia-100/80 mb-2">Unique instructions a product manager can hand to an engineer.</p>
+        ${actionHtml}
+      `;
+    }
+
+    function listHtml(items, ordered) {
+      const rows = (items && items.length ? items : ["Nothing to list."]).map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+      return ordered ? `<ol>${rows}</ol>` : `<ul>${rows}</ul>`;
+    }
+
+    function fillPdfSheet(result) {
+      const findings = result.findings && result.findings.length
+        ? result.findings
+        : ["We did not record extra findings."];
+      const actions = result.action_items && result.action_items.length
+        ? result.action_items
+        : ["No follow-up items."];
+      pdfSheet.innerHTML = `
+        <p class="meta">SpaceXAI Miami Community QA Hub</p>
+        <h1>Website checkup report</h1>
+        <p class="meta">Site tested: ${escapeHtml(result.url || "")}</p>
+        <div class="scorebox">
+          <p><strong>Health score:</strong> ${escapeHtml(result.score)} out of 100 &nbsp;·&nbsp; <strong>Letter grade:</strong> ${escapeHtml(result.grade)}</p>
+          <p>${escapeHtml(result.summary || "See the findings below.")}</p>
+        </div>
+        <h2>What we found</h2>
+        ${listHtml(findings, false)}
+        <h2>What to do next</h2>
+        <p>Work from the top. Several items are writing or layout — you can start even if you are not an engineer.</p>
+        ${listHtml(actions, true)}
+        <h2>What went well</h2>
+        ${listHtml(result.badges || [], false)}
+        <p class="meta">Generated for a mixed technical / non-technical team. File: spacexai-miami-qa-report.pdf</p>
+      `;
+    }
+
+    function setPill(agent, text) {
+      const id = agentMap[agent];
+      if (!id) return;
+      const el = document.querySelector("#" + id + " [data-state]");
+      if (el) el.textContent = text;
+    }
+
+    function appendLog(entry) {
+      const line = document.createElement("div");
+      const color =
+        entry.level === "error" ? "text-rose-400" :
+        entry.level === "warn" ? "text-amber-300" :
+        entry.agent === "A" ? "text-pink-300" :
+        entry.agent === "B" ? "text-cyan-300" :
+        entry.agent === "C" ? "text-fuchsia-300" : "text-emerald-300";
+      line.className = color;
+      const name = entry.agent === "HQ" ? "HQ" : "AGENT " + entry.agent;
+      line.textContent = `[${entry.ts}] [${name}]: ${entry.message}`;
+      terminal.appendChild(line);
+      terminal.scrollTop = terminal.scrollHeight;
+      if (entry.agent === "A") setPill("A", "RAGE CLICKING");
+      if (entry.agent === "B") setPill("B", "AUDITING DOM");
+      if (entry.agent === "C") setPill("C", "SNIFFING WIRE");
+    }
+
+    function renderCard(result) {
+      const score = Number(result.score || 0);
+      scoreValue.textContent = String(score);
+      scoreRing.style.strokeDasharray = String(CIRC);
+      scoreRing.style.strokeDashoffset = String(CIRC - (CIRC * score) / 100);
+      scoreRing.setAttribute("stroke", score >= 80 ? "#22f0ff" : score >= 60 ? "#ffb703" : "#ff2d95");
+      gradeLine.textContent = `Rank: ${result.grade || "—"}  ·  ${result.url || ""}`;
+      badges.innerHTML = "";
+      (result.badges || []).forEach((b) => {
+        const chip = document.createElement("span");
+        chip.className = "font-sans text-[10px] px-2 py-1 rounded border border-neoncyan/40 text-neoncyan";
+        chip.textContent = b;
+        badges.appendChild(chip);
+      });
+      const html = marked.parse(result.markdown || "");
+      if (result.modules) {
+        renderVisualReport(result);
+      } else {
+        report.innerHTML = DOMPurify.sanitize(html);
+      }
+      lastResult = result;
+      fillPdfSheet(result);
+      hasReport = true;
+      pdfBtn.disabled = false;
+      setPill("A", "COMPLETE");
+      setPill("B", "COMPLETE");
+      setPill("C", "COMPLETE");
+    }
+
+    function waitFrames(n) {
+      return new Promise((resolve) => {
+        const step = () => {
+          if (n <= 0) resolve();
+          else {
+            n -= 1;
+            requestAnimationFrame(step);
+          }
+        };
+        requestAnimationFrame(step);
+      });
+    }
+
+    function getJsPdfCtor() {
+      if (window.jspdf && window.jspdf.jsPDF) return window.jspdf.jsPDF;
+      if (window.jsPDF) return window.jsPDF;
+      return null;
+    }
+
+    function writeWrappedPdf(result) {
+      const JsPDF = getJsPdfCtor();
+      if (!JsPDF) return false;
+      const doc = new JsPDF({ unit: "pt", format: "letter", orientation: "portrait" });
+      const pageW = 612;
+      const pageH = 792;
+      const left = 54;
+      const right = 558;
+      const width = right - left;
+      const top = 88;
+      const pageBottom = 718;
+      let y = top;
+
+      function drawFooter() {
+        const footY = pageH - 40;
+        doc.setDrawColor(34, 240, 255);
+        doc.setLineWidth(1.1);
+        doc.line(left, footY - 14, right, footY - 14);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(13);
+        doc.setTextColor(255, 45, 149);
+        doc.text("QA HUB", pageW / 2, footY, { align: "center" });
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.setTextColor(110, 110, 130);
+        doc.text("SpaceXAI Miami Community  ·  Website checkup report", pageW / 2, footY + 12, { align: "center" });
+      }
+
+      function newPage() {
+        drawFooter();
+        doc.addPage();
+        y = top;
+      }
+
+      function ensure(space) {
+        if (y + space > pageBottom) newPage();
+      }
+
+      function block(text, size, style, color, gap) {
+        doc.setFont("helvetica", style || "normal");
+        doc.setFontSize(size);
+        if (color) doc.setTextColor(color[0], color[1], color[2]);
+        else doc.setTextColor(20, 20, 20);
+        const lines = doc.splitTextToSize(String(text || ""), width);
+        const lh = size * 1.35;
+        lines.forEach((line) => {
+          ensure(lh + 8);
+          y += lh;
+          doc.text(line, left, y);
+        });
+        y += gap == null ? 10 : gap;
+      }
+
+      function bullets(items, ordered) {
+        (items && items.length ? items : ["Nothing to list."]).forEach((item, idx) => {
+          const prefix = ordered ? (idx + 1) + ". " : "• ";
+          const lines = doc.splitTextToSize(prefix + String(item), width);
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(11);
+          doc.setTextColor(30, 30, 30);
+          lines.forEach((line) => {
+            ensure(20);
+            y += 16;
+            doc.text(line, left, y);
+          });
+          y += 6;
+        });
+        y += 8;
+      }
+
+      block("SpaceXAI Miami Community QA Hub", 10, "normal", [90, 90, 90], 12);
+      block("Website checkup report", 20, "bold", [17, 17, 17], 10);
+      block("Site tested: " + (result.url || ""), 11, "normal", [60, 60, 60], 12);
+      block(
+        "Health score: " + result.score + " out of 100    Letter grade: " + result.grade,
+        13,
+        "bold",
+        [17, 17, 17],
+        8
+      );
+      block(result.summary || "See the findings below.", 11, "normal", [30, 30, 30], 16);
+      const mods = result.modules || {};
+      function dumpMod(label, color, items) {
+        block(label, 13, "bold", color, 8);
+        if (!items || !items.length) {
+          block("None on this pass.", 11, "italic", [90, 90, 90], 10);
+          return;
+        }
+        items.forEach((m) => {
+          const badgeLine = (m.badges && m.badges.length) ? " Highlights: " + m.badges.join(", ") : "";
+          bullets([m.title + " — " + m.detail + badgeLine], false);
+        });
+      }
+      dumpMod("Critical Traps", [176, 16, 96], mods.critical);
+      dumpMod("Warnings", [160, 100, 0], mods.warnings);
+      dumpMod("Optimizations", [0, 110, 130], mods.optimizations);
+      block("What to do next", 14, "bold", [176, 16, 96], 8);
+      block("Work from the top. Several items are writing or layout — you can start even if you are not an engineer.", 11, "italic", [40, 40, 40], 8);
+      bullets(result.action_items, true);
+      block("What went well", 14, "bold", [176, 16, 96], 8);
+      bullets(result.badges, false);
+      drawFooter();
+      doc.save("spacexai-miami-qa-report.pdf");
+      return true;
+    }
+
+    async function downloadPdfReport() {
+      if (!hasReport || !lastResult) return;
+      pdfBtn.disabled = true;
+      pdfBtn.textContent = "Rendering PDF…";
+      try {
+        if (writeWrappedPdf(lastResult)) return;
+        fillPdfSheet(lastResult);
+        pdfStage.classList.remove("is-off");
+        await waitFrames(3);
+        await html2pdf()
+          .set({
+            margin: [12, 12, 12, 12],
+            filename: "spacexai-miami-qa-report.pdf",
+            image: { type: "jpeg", quality: 0.98 },
+            html2canvas: {
+              scale: 1.5,
+              backgroundColor: "#ffffff",
+              useCORS: true,
+              logging: false,
+              windowWidth: 612,
+              width: 612,
+              scrollX: 0,
+              scrollY: 0,
+            },
+            jsPDF: { unit: "pt", format: "letter", orientation: "portrait" },
+            pagebreak: { mode: ["css"] },
+          })
+          .from(pdfSheet)
+          .save();
+      } catch (err) {
+        statusLine.textContent = "PDF export failed: " + (err && err.message ? err.message : "unknown error");
+      } finally {
+        pdfStage.classList.add("is-off");
+        pdfBtn.textContent = "Download PDF Report";
+        pdfBtn.disabled = !hasReport;
+      }
+    }
+
+    pdfBtn.addEventListener("click", downloadPdfReport);
+
+    function resetHud() {
+      terminal.innerHTML = "";
+      hasReport = false;
+      lastResult = null;
+      pdfBtn.disabled = true;
+      report.innerHTML = '<p class="text-cyan-100/50 font-sans">Raid in progress…</p>';
+      badges.innerHTML = "";
+      scoreValue.textContent = "--";
+      scoreRing.style.strokeDashoffset = String(CIRC);
+      gradeLine.textContent = "Rank: pending";
+      ["A", "B", "C"].forEach((a) => setPill(a, "DEPLOYING"));
+    }
+
+    document.getElementById("sandbox-fill").addEventListener("click", () => {
+      document.getElementById("url").value = window.location.origin + "/sandbox";
+    });
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const url = document.getElementById("url").value.trim();
+      if (!url) return;
+      if (source) {
+        source.close();
+        source = null;
+      }
+      btn.disabled = true;
+      resetHud();
+      statusLine.textContent = "Dispatching raid…";
+      try {
+        const res = await fetch("/api/test", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url }),
+        });
+        const payload = await res.json();
+        if (!res.ok) {
+          throw new Error(payload.detail || "Could not start raid");
+        }
+        statusLine.textContent = "Job " + payload.job_id + " live";
+        source = new EventSource("/api/jobs/" + payload.job_id + "/events");
+        source.onmessage = (msg) => {
+          appendLog(JSON.parse(msg.data));
+        };
+        let finished = false;
+        source.addEventListener("complete", (msg) => {
+          finished = true;
+          renderCard(JSON.parse(msg.data));
+          statusLine.textContent = "Raid complete.";
+          source.close();
+          source = null;
+          btn.disabled = false;
+        });
+        source.onerror = async () => {
+          if (finished || !source) return;
+          source.close();
+          source = null;
+          const poll = await fetch("/api/jobs/" + payload.job_id);
+          const job = await poll.json();
+          terminal.innerHTML = "";
+          (job.logs || []).forEach(appendLog);
+          if (job.result) {
+            renderCard(job.result);
+            statusLine.textContent = "Raid complete.";
+          } else {
+            statusLine.textContent = "Stream dropped — still running, refresh if it stalls.";
+          }
+          btn.disabled = false;
+        };
+      } catch (err) {
+        statusLine.textContent = err.message;
+        appendLog({ ts: "now", agent: "HQ", message: err.message, level: "error" });
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
