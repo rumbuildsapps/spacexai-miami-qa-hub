@@ -1,73 +1,51 @@
-# 🌴 SpaceXAI Miami Community QA Hub 💥
+# SpaceXAI Miami QA Hub
 
-https://spacexai-miami-qa-hub.onrender.com/
+A small QA tool I built for early-stage builders in Miami. Paste a staging URL, and it runs three automated browser checks at the same time, then gives the site a health score and a report you can share with your team.
 
-> **Autonomous multi-agent QA testing playground built with Grok Bot for the SpaceXAI Miami Community.**  
-> *"Because shipping buggy code that crashes the moment an investor opens it is not very Miami Tech."*
+**Live demo:** https://spacexai-miami-qa-hub.onrender.com/
 
-Welcome to the **SpaceXAI Miami Community QA Hub**—a public, multi-agent autonomous playground built using our **Grok Bot** credits to act as an instant safety net for early-stage builders. 
+> Note: Free cloud hosting can't run real browsers, so the live demo shows a simulated run. Click **"Use local sandbox URL"** on the dashboard to try it. The real checks run locally (see below).
 
-Instead of a boring text wrapper, this app spins up a headless browser cluster to ruthlessly assault, audit, and wiretap your staging URLs before you push them to production.
+## What it checks
 
----
+- **Chaos Client** acts like a careless user, with rapid clicks, empty form submissions, and fast tabbing, to see if the page breaks.
+- **DOM Auditor** looks for basic accessibility issues and overlapping elements that block clicks.
+- **Console Detective** listens to the browser console and network for JavaScript errors and failed API calls (400 and 500 errors).
 
-## ☁️ Cloud Live Demo Note (For Judges & Reviewers)
-> **🚀 How to test this live on our Cloud URL right now:**  
-> Free-tier cloud hosting containers strictly limit background browser clustering. To safeguard our server and demonstrate our engine, we engineered an **Adaptive Simulation Fallback**. 
-> 
-> When testing our live cloud URL link, simply click the **"Use local sandbox URL"** button on the dashboard. This will perfectly orchestrate and simulate our entire multi-agent chaos engineering loop, stream live neon telemetry, calculate scores, and generate a downloadable report! You can also use other websites for testing: amazon, linkedin, etc.
+## How the score works
 
----
+Every site starts at 100 and loses points for each issue found:
 
-## ⚡ The Team (Multi-Agent Architecture)
+- **-12** for each failed API call or crash
+- **-11** for each serious structure or accessibility issue
+- **-4** for each layout overlap or form error
 
-We don't do basic unit tests. When you paste a URL and hit **Test App**, a specialized three-agent strike team deploys into the viewport:
+You get a letter grade, plain-English findings, suggested fixes, and a downloadable PDF report.
 
-*   **🕵️‍♂️ Agent A: The Chaos Client**  
-    Mimics your absolute worst user. It triggers rapid-fire rage clicks, fires empty form payloads, executes chaotic keyboard tab-storms, and tries to force race conditions to break your frontend state variables.
-    
-*   **🩺 Agent B: The DOM Auditor**  
-    Our structural compliance inspector. It goes under the hood into the browser's raw Document Object Model (DOM) tree. It audits your layout elements against international accessibility guidelines (WCAG) and flags hidden visual overlap collisions that render elements unclickable.
-    
-*   **🔌 Agent C: The Console Detective**  
-    The silent wiretapper. It hooks directly into the browser runtime's console logs and network traffic, capturing silent JavaScript exceptions, unhandled promises, and 400/500 API payload crashes that developers miss.
+## Tech stack
 
----
+- Python and FastAPI for the backend, which runs the checks in parallel
+- Playwright with headless Chromium for the browser checks
+- Tailwind CSS for the dashboard
 
-## 📊 The Gamified "Resiliency Score Card"
+I built this with Grok Bot as my AI coding assistant. I decided what to test and how to score it, then tested and fixed the results.
 
-Every staging surface starts with a flawless **100/100 Stability Score**. The agents then deduct points based on the severity of flaws discovered:
-*   `-12 points` per network crash or dead API endpoint.
-*   `-11 points` per critical structural or accessibility violation.
-*   `-4 points` per layout collision or form handling error.
-
-The result? A localized, interactive dashboard with **live telemetry streams**, dynamic color-coded category badges, an automated **Actionable Developer Fixes** engine, and a high-contrast **Download PDF Report** system for quick distribution.
-
----
-
-## 🛠️ Local Tech Stack & Quickstart
-
-*   **Backend:** FastAPI (Python) for asynchronous agent task orchestration.
-*   **Automation Cluster:** Playwright (Headless Chromium engine).
-*   **Frontend UX:** Modern "Miami Cyberpunk" Dark-Mode Theme powered by Tailwind CSS.
-
-### 🏃‍♂️ Running It Locally
-To run the full raw headless browser cluster locally on your machine, initialize the pipeline:
+## Run it locally
 
 ```bash
-# 1. Install the core infrastructure dependencies
 pip install -r requirements.txt
-
-# 2. Provision the headless browser engines
 playwright install chromium
-
-# 3. Ignite the dashboard server
 uvicorn app:app --reload
 ```
 
-Open https://spacexai-miami-qa-hub.onrender.com/   and start stress-testing!
+Then open http://localhost:8000.
+
+## What I'd improve next
+
+- Use axe-core for deeper accessibility testing
+- Support pages behind a login
+- Run it in CI on every deploy
 
 ---
 
-## 🏆 Created for the SpaceXAI Miami Tech Competition
-Built with ❤️ by a local QA Specialist looking to accelerate shipping velocity across the Miami builder ecosystem. Remember: Production is a sacred place. Protect it.
+Built for the SpaceXAI Miami community. Production is a sacred place. Protect it.
